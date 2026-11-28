@@ -1,0 +1,13 @@
+{
+  "name": "bsv-data",
+  "owner": {
+    "name": "BSV Data"
+  },
+  "description": "Bitcoin SV (BSV) skills for AI agents from BSV Data. They answer BSV questions from bitcoinsv.it, check Paymail handles before you pay, and follow the largest BSV holders.",
+  "plugins": [
+    {
+      "name": "bsv-data-skills",
+      "source": "./"
+    }
+  ]
+}

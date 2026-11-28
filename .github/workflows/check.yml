@@ -1,0 +1,59 @@
+name: Weekly check
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Get the repository
+        run: git clone --depth 1 "https://github.com/${GITHUB_REPOSITORY}.git" repo
+
+      - name: Check skill headers and links
+        working-directory: repo
+        run: |
+          python3 - <<'PY'
+          import glob, os, re, sys, time, urllib.request
+          fail = []
+          ua = "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Claude-User/1.0; +Claude-User@anthropic.com)"
+          urls = set()
+          for path in sorted(glob.glob("skills/*/SKILL.md")):
+              text = open(path, encoding="utf-8").read()
+              folder = os.path.basename(os.path.dirname(path))
+              head = text.split("---")[1] if text.startswith("---") else ""
+              name = re.search(r"^name:\s*(\S+)", head, re.M)
+              desc = re.search(r'^description:\s*"(.*)"\s*$', head, re.M)
+              comp = re.search(r'^compatibility:\s*"(.*)"\s*$', head, re.M)
+              if not name or name.group(1) != folder:
+                  fail.append(f"{path}: name does not match the folder")
+              if not desc or not 1 <= len(desc.group(1)) <= 1024:
+                  fail.append(f"{path}: description missing or longer than 1024 characters")
+              if comp and len(comp.group(1)) > 500:
+                  fail.append(f"{path}: compatibility longer than 500 characters")
+              for u in re.findall(r"https://[^\s)|`\"']+", text):
+                  u = u.rstrip(".,;:")
+                  if re.search(r"[A-Z]{4,}|\{", u.split("//", 1)[1]):
+                      continue
+                  urls.add(u)
+          for u in sorted(urls):
+              try:
+                  code = urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": ua}), timeout=30).status
+              except Exception as e:
+                  code = getattr(e, "code", str(e))
+              if code != 200:
+                  fail.append(f"{u}: answered {code}")
+              time.sleep(1)
+          print(f"Checked {len(urls)} links.")
+          for f in fail:
+              print("FAIL:", f)
+          sys.exit(1 if fail else 0)
+          PY

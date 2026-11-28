@@ -1,0 +1,18 @@
+{
+  "name": "bsv-data-skills",
+  "displayName": "BSV Data Skills",
+  "version": "1.2.3",
+  "description": "Bitcoin SV (BSV) skills for AI agents. Answers BSV questions from the matching page on bitcoinsv.it, checks a Paymail handle before you pay it, and follows the largest BSV holders. The skills never ask for a seed phrase or private key and never move funds.",
+  "author": {
+    "name": "BSV Data",
+    "url": "https://bitcoinsv.it"
+  },
+  "homepage": "https://bitcoinsv.it",
+  "repository": "https://github.com/bitcoinsv-data/bsv-data-skills",
+  "license": "Apache-2.0",
+  "keywords": [
+    "bsv",
+    "bitcoin-sv",
+    "agent-skills"
+  ]
+}
